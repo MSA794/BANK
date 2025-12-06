@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>انشاء حساب</title>
+    <style>
+      body { font-family: Arial, sans-serif; background:#0f1724; color:#e6eef8; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+      .card { background:#18202b; padding:24px; border-radius:12px; width:360px; box-shadow:0 6px 18px rgba(0,0,0,0.5);}
+      input { width:100%; padding:10px 12px; margin:8px 0; border-radius:8px; border:1px solid #263345; background:#f3f7fb; color:#111; }
+      button { width:100%; padding:12px; background:#2962ff; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
+      .alert { padding:10px; border-radius:8px; margin-bottom:10px; display:none; }
+      .alert.error { background:#ff6b6b; color:white; display:block; }
+      .alert.success { background:#48c774; color:white; display:block; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2 style="margin-top:0">إنشاء حساب جديد</h2>
+      <div id="msg" class="alert"></div>
+      <label>الاسم الكامل</label>
+      <input id="fullname" type="text" placeholder="مثال: محمد علي محمد" />
+      <label>البريد الإلكتروني</label>
+      <input id="email" type="email" placeholder="example@mail.com" />
+      <label>كلمة المرور</label>
+      <input id="password" type="password" placeholder="********" />
+      <button id="btn">إنشاء الحساب</button>
+    </div>
+
+    <script>
+      const btn = document.getElementById('btn');
+      const msg = document.getElementById('msg');
+
+      function showMessage(text, type='error') {
+        msg.className = 'alert ' + (type==='error' ? 'error' : 'success');
+        msg.textContent = text;
+      }
+
+      btn.addEventListener('click', async () => {
+        msg.style.display = 'none';
+        const fullname = document.getElementById('fullname').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!fullname || !email || !password) {
+          showMessage('يرجى ملء جميع الحقول', 'error');
+          return;
+        }
+
+        try {
+          const res = await fetch('register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullname, email, password })
+          });
+
+          // always try to parse JSON; server now responds with JSON
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            showMessage(data.message || 'تم الإنشاء بنجاح', 'success');
+          } else {
+            showMessage(data.message || 'حدث خطأ', 'error');
+          }
+        } catch (err) {
+          showMessage('خطأ في الاتصال بالسيرفر. تأكد من رفع الملفات على استضافة تدعم PHP.', 'error');
+          console.error(err);
+        }
+      });
+    </script>
+  </body>
+</html>
